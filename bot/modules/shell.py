@@ -37,7 +37,40 @@ def shell(update, context):
     else:
         sendMessage('No Reply', context.bot, update.message)
 
+def medialink(update, context):
+    message = update.effective_message
+    cmd = message.text.split(' ', 1)
+    if len(cmd) == 1:
+        message.reply_text('Send any Direct-URL to generate It\'s detailed Mediainfo')
+        return
+    cmd = f'mediainfo {cmd[1]}'
+    process = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    stdout, stderr = process.communicate()
+    reply = ''
+    stderr = stderr.decode()
+    stdout = stdout.decode()
+    if stdout:
+        reply += f"*Result*\n{stdout}\n"
+        # LOGGER.info(f"Shell - {cmd} - {stdout}")
+    if stderr:
+        reply += f"*Error*\n{stderr}\n"
+        # LOGGER.error(f"Shell - {cmd} - {stderr}")
+    if len(reply) > 3000:
+        with open('mediainfo.txt', 'w') as file:
+            file.write(reply)
+        with open('mediainfo.txt', 'rb') as doc:
+            context.bot.send_document(
+                document=doc,
+                filename=doc.name,
+                reply_to_message_id=message.message_id,
+                chat_id=message.chat_id)
+    else:
+        message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
-SHELL_HANDLER = CommandHandler(BotCommands.ShellCommand, shell,
+
+MEDIALINK_HANDLER = CommandHandler(BotCommands.MedialinkCommand, medialink, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
+dispatcher.add_handler(MEDIALINK_HANDLER)
+SHELL_HANDLER = CommandHandler(BotCommands.ShellCommand, shell, 
                                                   filters=CustomFilters.owner_filter, run_async=True)
 dispatcher.add_handler(SHELL_HANDLER)
