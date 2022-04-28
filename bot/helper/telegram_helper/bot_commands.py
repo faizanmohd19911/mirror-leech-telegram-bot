@@ -47,5 +47,6 @@ class _BotCommands:
         self.RssSubCommand = f'rsssub{CMD_INDEX}'
         self.RssUnSubCommand = f'rssunsub{CMD_INDEX}'
         self.RssSettingsCommand = f'rssset{CMD_INDEX}'
+        self.MedialinkCommand = 'mediainfo'
 
 BotCommands = _BotCommands()
